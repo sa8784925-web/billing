@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <div>
+            <h1>INVOICE</h1>
+            <p>Professional Billing System</p>
+        </div>
+
+        <div class="invoice-info">
+            <label>Invoice No.</label>
+            <input type="text" id="invoiceNo" value="INV-1001">
+
+            <label>Date</label>
+            <input type="date" id="invoiceDate">
+        </div>
+    </header>
+
+    <section class="details">
+        <div class="box">
+            <h3>Business Details</h3>
+            <input type="text" placeholder="Business Name">
+            <input type="text" placeholder="Business Address">
+            <input type="text" placeholder="Phone Number">
+            <input type="email" placeholder="Business Email">
+        </div>
+
+        <div class="box">
+            <h3>Customer Details</h3>
+            <input type="text" placeholder="Customer Name">
+            <input type="text" placeholder="Customer Address">
+            <input type="text" placeholder="Customer Phone">
+            <input type="email" placeholder="Customer Email">
+        </div>
+    </section>
+
+    <section class="items-section">
+
+        <div class="section-title">
+            <h2>Items</h2>
+            <button onclick="addRow()" class="add-btn">+ Add Item</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Item Description</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Tax %</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="itemBody">
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <input type="text" placeholder="Product / Service">
+                        </td>
+                        <td>
+                            <input type="number" class="qty" value="1" min="1"
+                                   oninput="calculate()">
+                        </td>
+                        <td>
+                            <input type="number" class="price" value="0" min="0"
+                                   oninput="calculate()">
+                        </td>
+                        <td>
+                            <input type="number" class="tax" value="0" min="0"
+                                   oninput="calculate()">
+                        </td>
+                        <td class="row-total">₹0.00</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteRow(this)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="bottom">
+
+        <div class="notes">
+            <h3>Notes</h3>
+            <textarea placeholder="Additional notes..."></textarea>
+
+            <h3>Payment Method</h3>
+            <select id="payment">
+                <option>Cash</option>
+                <option>UPI</option>
+                <option>Credit Card</option>
+                <option>Debit Card</option>
+                <option>Bank Transfer</option>
+            </select>
+        </div>
+
+        <div class="summary">
+
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <strong id="subtotal">₹0.00</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Discount (%)</span>
+                <input type="number" id="discount"
+                       value="0" min="0"
+                       oninput="calculate()">
+            </div>
+
+            <div class="summary-row">
+                <span>Discount Amount</span>
+                <strong id="discountAmount">₹0.00</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Tax</span>
+                <strong id="taxTotal">₹0.00</strong>
+            </div>
+
+            <div class="grand-total">
+                <span>Grand Total</span>
+                <strong id="grandTotal">₹0.00</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <footer>
+        <button class="print-btn" onclick="printInvoice()">
+            🖨 Print Invoice
+        </button>
+
+        <button class="clear-btn" onclick="clearInvoice()">
+            Clear
+        </button>
+    </footer>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

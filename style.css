@@ -1,0 +1,317 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f1f5f9;
+    color: #1e293b;
+    padding: 30px;
+}
+
+.container {
+    max-width: 1100px;
+    margin: auto;
+    background: white;
+    padding: 35px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+/* Header */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 25px;
+    margin-bottom: 25px;
+}
+
+header h1 {
+    font-size: 38px;
+    color: #2563eb;
+}
+
+header p {
+    color: #64748b;
+    margin-top: 5px;
+}
+
+.invoice-info {
+    display: grid;
+    grid-template-columns: 100px 180px;
+    gap: 10px;
+    align-items: center;
+}
+
+.invoice-info label {
+    font-weight: bold;
+}
+
+/* Inputs */
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    outline: none;
+    font-size: 14px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #2563eb;
+}
+
+/* Details */
+
+.details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.box {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.box h3 {
+    margin-bottom: 15px;
+    color: #334155;
+}
+
+.box input {
+    margin-bottom: 10px;
+}
+
+/* Items */
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-title h2 {
+    font-size: 22px;
+}
+
+.add-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.add-btn:hover {
+    background: #1d4ed8;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #1e293b;
+    color: white;
+    padding: 12px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+td input {
+    min-width: 80px;
+}
+
+.row-total {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.delete-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 7px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #dc2626;
+}
+
+/* Bottom */
+
+.bottom {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 50px;
+    margin-top: 30px;
+}
+
+.notes textarea {
+    height: 120px;
+    resize: vertical;
+    margin: 10px 0 20px;
+}
+
+.notes h3 {
+    margin-top: 5px;
+}
+
+/* Summary */
+
+.summary {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.summary-row input {
+    width: 100px;
+}
+
+.grand-total {
+    display: flex;
+    justify-content: space-between;
+    border-top: 2px solid #cbd5e1;
+    padding-top: 20px;
+    margin-top: 20px;
+    font-size: 22px;
+    color: #2563eb;
+}
+
+/* Footer */
+
+footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.print-btn,
+.clear-btn {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.print-btn {
+    background: #16a34a;
+    color: white;
+}
+
+.clear-btn {
+    background: #64748b;
+    color: white;
+}
+
+.print-btn:hover {
+    background: #15803d;
+}
+
+.clear-btn:hover {
+    background: #475569;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .invoice-info {
+        grid-template-columns: 100px 1fr;
+        width: 100%;
+    }
+
+    .details {
+        grid-template-columns: 1fr;
+    }
+
+    .bottom {
+        grid-template-columns: 1fr;
+    }
+
+    footer {
+        justify-content: stretch;
+    }
+
+    footer button {
+        flex: 1;
+    }
+}
+
+/* Print */
+
+@media print {
+
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+
+    .add-btn,
+    .delete-btn,
+    footer,
+    .clear-btn {
+        display: none;
+    }
+
+    input,
+    textarea,
+    select {
+        border: none;
+        background: transparent;
+    }
+}
