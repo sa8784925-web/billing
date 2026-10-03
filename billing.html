@@ -1,0 +1,1973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A4 Billing Software</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eef2f7;
+    color: #1e293b;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    margin-top: 0;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 18px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.field {
+    margin-bottom: 10px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+}
+
+button {
+    border: 0;
+    padding: 10px 15px;
+    border-radius: 6px;
+    color: white;
+    background: #2563eb;
+    cursor: pointer;
+    margin: 3px;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+.green {
+    background: #16a34a;
+}
+
+.red {
+    background: #dc2626;
+}
+
+.gray {
+    background: #64748b;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 10px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #dbe2ea;
+    padding: 7px;
+}
+
+th {
+    background: #f1f5f9;
+}
+
+.item-table input,
+.item-table select {
+    border: none;
+    padding: 5px;
+}
+
+.total-box {
+    width: 350px;
+    margin-left: auto;
+    margin-top: 15px;
+}
+
+.total-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px;
+}
+
+.grand-total {
+    border-top: 2px solid #111;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.saved-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.saved-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 0;
+}
+
+.muted {
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* =========================
+   A4 INVOICE
+========================= */
+
+.print-area {
+    display: none;
+}
+
+.a4 {
+    width: 210mm;
+    min-height: 297mm;
+    background: white;
+    margin: auto;
+    padding: 12mm;
+    color: #000;
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 2px solid #000;
+    padding-bottom: 12px;
+}
+
+.shop-name {
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.invoice-title {
+    text-align: right;
+    font-size: 23px;
+    font-weight: bold;
+}
+
+.invoice-title span {
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.bill-to {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 20px 0;
+}
+
+.print-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.print-table th,
+.print-table td {
+    border: 1px solid #222;
+    padding: 7px;
+    font-size: 12px;
+}
+
+.print-table th {
+    background: #eee;
+}
+
+.amount-words {
+    margin-top: 20px;
+    border: 1px solid #222;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 50px;
+    font-size: 12px;
+}
+
+@media(max-width:800px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .total-box {
+        width: 100%;
+    }
+
+    .a4 {
+        width: 100%;
+        padding: 20px;
+    }
+}
+
+@media print {
+
+    body {
+        background: white;
+    }
+
+    .container {
+        display: none;
+    }
+
+    .print-area {
+        display: block;
+    }
+
+    .a4 {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        padding: 12mm;
+    }
+
+    @page {
+        size: A4;
+        margin: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Billing Software</h1>
+
+<div class="toolbar">
+    <button onclick="newBill()">New Bill</button>
+    <button class="green" onclick="saveBill()">Save Bill</button>
+    <button onclick="printBill()">Print / Save PDF</button>
+    <button class="gray" onclick="backupData()">Backup Data</button>
+    <button class="gray" onclick="document.getElementById('restoreFile').click()">
+        Restore Data
+    </button>
+
+    <input
+        type="file"
+        id="restoreFile"
+        accept=".json"
+        hidden
+        onchange="restoreData(event)"
+    >
+</div>
+
+<!-- SHOP DETAILS -->
+
+<div class="card">
+
+<h2>Shop / Business Details</h2>
+
+<p class="muted">
+Enter these details once. They will automatically appear on every bill.
+</p>
+
+<div class="grid">
+
+<div class="field">
+<label>Shop Name</label>
+<input id="shopName">
+</div>
+
+<div class="field">
+<label>Contact Number</label>
+<input id="shopPhone">
+</div>
+
+<div class="field">
+<label>Email</label>
+<input id="shopEmail">
+</div>
+
+<div class="field">
+<label>GSTIN</label>
+<input id="shopGST">
+</div>
+
+</div>
+
+<div class="field">
+<label>Shop Address</label>
+<input id="shopAddress">
+</div>
+
+<button class="green" onclick="saveShop()">
+Save Shop Details
+</button>
+
+<span id="shopMessage" class="muted"></span>
+
+</div>
+
+
+<!-- CUSTOMER -->
+
+<div class="card">
+
+<h2>Customer Details</h2>
+
+<div class="grid">
+
+<div class="field">
+<label>Saved Customer</label>
+
+<select id="customerSelect" onchange="loadCustomer()">
+<option value="">-- New Customer --</option>
+</select>
+
+</div>
+
+<div class="field">
+<label>Customer Name</label>
+<input id="customerName">
+</div>
+
+<div class="field">
+<label>Contact Number</label>
+<input id="customerPhone">
+</div>
+
+<div class="field">
+<label>GSTIN</label>
+<input id="customerGST">
+</div>
+
+</div>
+
+<div class="field">
+<label>Customer Address</label>
+<input id="customerAddress">
+</div>
+
+<button class="green" onclick="saveCustomer()">
+Save Customer
+</button>
+
+<button class="red" onclick="deleteCustomer()">
+Delete Customer
+</button>
+
+</div>
+
+
+<!-- INVOICE -->
+
+<div class="card">
+
+<h2>Invoice Details</h2>
+
+<div class="grid">
+
+<div class="field">
+<label>Invoice Number</label>
+<input id="invoiceNo">
+</div>
+
+<div class="field">
+<label>Date</label>
+<input id="invoiceDate" type="date">
+</div>
+
+<div class="field">
+<label>Overall Discount %</label>
+<input
+    id="discountRate"
+    type="number"
+    value="0"
+    min="0"
+    oninput="calculate()"
+>
+</div>
+
+<div class="field">
+<label>Overall Tax %</label>
+<input
+    id="taxRate"
+    type="number"
+    value="0"
+    min="0"
+    oninput="calculate()"
+>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ITEMS -->
+
+<div class="card">
+
+<h2>Items</h2>
+
+<div style="overflow-x:auto">
+
+<table class="item-table">
+
+<thead>
+<tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Rate</th>
+<th>Discount %</th>
+<th>Tax %</th>
+<th>Total</th>
+<th></th>
+</tr>
+</thead>
+
+<tbody id="itemBody"></tbody>
+
+</table>
+
+</div>
+
+<br>
+
+<button onclick="addItem()">
++ Add Item
+</button>
+
+<button class="green" onclick="saveItems()">
+Save Items
+</button>
+
+</div>
+
+
+<!-- SAVED CUSTOMERS -->
+
+<div class="card">
+
+<h2>Saved Customers</h2>
+
+<div id="customerList" class="saved-list"></div>
+
+</div>
+
+
+<!-- SAVED ITEMS -->
+
+<div class="card">
+
+<h2>Saved Items</h2>
+
+<div id="itemList" class="saved-list"></div>
+
+</div>
+
+
+<!-- SAVED BILLS -->
+
+<div class="card">
+
+<h2>Saved Bills</h2>
+
+<div id="billList" class="saved-list"></div>
+
+</div>
+
+</div>
+
+
+<!-- PRINT AREA -->
+
+<div id="printArea" class="print-area"></div>
+
+
+<script>
+
+/* =====================================
+   DATABASE
+===================================== */
+
+const STORAGE_KEY = "A4_BILLING_SOFTWARE";
+
+let database = JSON.parse(
+    localStorage.getItem(STORAGE_KEY)
+) || {
+    shop: {},
+    customers: [],
+    items: [],
+    bills: [],
+    nextInvoice: 1
+};
+
+let billItems = [];
+
+
+/* =====================================
+   BASIC FUNCTIONS
+===================================== */
+
+function saveDatabase() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(database)
+    );
+
+    renderAll();
+}
+
+
+function value(id) {
+    return document.getElementById(id).value;
+}
+
+
+function today() {
+
+    return new Date()
+        .toISOString()
+        .substring(0,10);
+
+}
+
+
+function escapeHTML(text) {
+
+    return String(text || "")
+        .replace(/[&<>"']/g, function(c) {
+
+            return {
+                "&":"&amp;",
+                "<":"&lt;",
+                ">":"&gt;",
+                '"':"&quot;",
+                "'":"&#39;"
+            }[c];
+
+        });
+
+}
+
+
+/* =====================================
+   SHOP DETAILS
+===================================== */
+
+function loadShop() {
+
+    const shop = database.shop || {};
+
+    document.getElementById("shopName").value =
+        shop.name || "";
+
+    document.getElementById("shopPhone").value =
+        shop.phone || "";
+
+    document.getElementById("shopEmail").value =
+        shop.email || "";
+
+    document.getElementById("shopGST").value =
+        shop.gst || "";
+
+    document.getElementById("shopAddress").value =
+        shop.address || "";
+}
+
+
+function saveShop() {
+
+    database.shop = {
+
+        name: value("shopName"),
+
+        phone: value("shopPhone"),
+
+        email: value("shopEmail"),
+
+        gst: value("shopGST"),
+
+        address: value("shopAddress")
+
+    };
+
+    saveDatabase();
+
+    document.getElementById("shopMessage").textContent =
+        " Shop details saved successfully.";
+
+}
+
+
+/* =====================================
+   NEW BILL
+===================================== */
+
+function newBill() {
+
+    document.getElementById("invoiceNo").value =
+        "INV-" +
+        String(database.nextInvoice)
+        .padStart(4,"0");
+
+    document.getElementById("invoiceDate").value =
+        today();
+
+    document.getElementById("discountRate").value = 0;
+    document.getElementById("taxRate").value = 0;
+
+    document.getElementById("customerSelect").value = "";
+
+    document.getElementById("customerName").value = "";
+    document.getElementById("customerPhone").value = "";
+    document.getElementById("customerGST").value = "";
+    document.getElementById("customerAddress").value = "";
+
+    billItems = [];
+
+    addItem();
+
+}
+
+
+/* =====================================
+   CUSTOMERS
+===================================== */
+
+function saveCustomer() {
+
+    const customer = {
+
+        name: value("customerName"),
+
+        phone: value("customerPhone"),
+
+        gst: value("customerGST"),
+
+        address: value("customerAddress")
+
+    };
+
+    if (!customer.name) {
+
+        alert("Please enter customer name.");
+
+        return;
+
+    }
+
+    const index = database.customers.findIndex(
+        c =>
+            c.name.toLowerCase() ===
+            customer.name.toLowerCase()
+            &&
+            c.phone === customer.phone
+    );
+
+    if (index >= 0) {
+
+        database.customers[index] = customer;
+
+    } else {
+
+        database.customers.push(customer);
+
+    }
+
+    saveDatabase();
+
+    alert("Customer saved for future bills.");
+
+}
+
+
+function loadCustomer() {
+
+    const index =
+        document.getElementById("customerSelect").value;
+
+    if (index === "") return;
+
+    const customer =
+        database.customers[index];
+
+    document.getElementById("customerName").value =
+        customer.name;
+
+    document.getElementById("customerPhone").value =
+        customer.phone || "";
+
+    document.getElementById("customerGST").value =
+        customer.gst || "";
+
+    document.getElementById("customerAddress").value =
+        customer.address || "";
+
+}
+
+
+function deleteCustomer() {
+
+    const index =
+        document.getElementById("customerSelect").value;
+
+    if (index === "") {
+
+        alert("Please select a saved customer.");
+
+        return;
+
+    }
+
+    database.customers.splice(index,1);
+
+    saveDatabase();
+
+    newBill();
+
+}
+
+
+/* =====================================
+   ITEMS
+===================================== */
+
+function addItem(item = {}) {
+
+    billItems.push({
+
+        name: item.name || "",
+
+        qty: item.qty || 1,
+
+        rate: item.rate || 0,
+
+        discount: item.discount || 0,
+
+        tax: item.tax || 0
+
+    });
+
+    renderItems();
+
+}
+
+
+function renderItems() {
+
+    const body =
+        document.getElementById("itemBody");
+
+    body.innerHTML = "";
+
+    billItems.forEach((item,index) => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+        <td>
+
+            <select
+                onchange="selectSavedItem(${index},this.value)"
+            >
+
+                <option value="">
+                    -- Saved Item --
+                </option>
+
+                ${database.items.map(
+                    saved => `
+
+                    <option
+                        value="${escapeHTML(saved.name)}"
+                        ${saved.name === item.name ? "selected":""}
+                    >
+                        ${escapeHTML(saved.name)}
+                    </option>
+
+                    `
+                ).join("")}
+
+            </select>
+
+            <input
+                placeholder="Item name"
+                value="${escapeHTML(item.name)}"
+                oninput="
+                    billItems[${index}].name=this.value
+                "
+            >
+
+        </td>
+
+        <td>
+            <input
+                type="number"
+                min="0"
+                value="${item.qty}"
+                oninput="
+                    billItems[${index}].qty=+this.value;
+                    calculate()
+                "
+            >
+        </td>
+
+        <td>
+            <input
+                type="number"
+                min="0"
+                step="0.01"
+                value="${item.rate}"
+                oninput="
+                    billItems[${index}].rate=+this.value;
+                    calculate()
+                "
+            >
+        </td>
+
+        <td>
+            <input
+                type="number"
+                min="0"
+                value="${item.discount}"
+                oninput="
+                    billItems[${index}].discount=+this.value;
+                    calculate()
+                "
+            >
+        </td>
+
+        <td>
+            <input
+                type="number"
+                min="0"
+                value="${item.tax}"
+                oninput="
+                    billItems[${index}].tax=+this.value;
+                    calculate()
+                "
+            >
+        </td>
+
+        <td id="itemTotal${index}">
+            0.00
+        </td>
+
+        <td>
+
+            <button
+                class="red"
+                onclick="
+                    billItems.splice(${index},1);
+                    renderItems()
+                "
+            >
+                ×
+            </button>
+
+        </td>
+
+        `;
+
+        body.appendChild(row);
+
+    });
+
+    calculate();
+
+}
+
+
+function selectSavedItem(index,name) {
+
+    if (!name) return;
+
+    const item =
+        database.items.find(
+            i => i.name === name
+        );
+
+    if (!item) return;
+
+    billItems[index].name = item.name;
+    billItems[index].rate = item.rate;
+    billItems[index].tax = item.tax || 0;
+
+    renderItems();
+
+}
+
+
+function saveItems() {
+
+    let newItems = 0;
+
+    billItems.forEach(item => {
+
+        if (!item.name) return;
+
+        const saved = {
+
+            name: item.name,
+
+            rate: Number(item.rate),
+
+            tax: Number(item.tax)
+
+        };
+
+        const index =
+            database.items.findIndex(
+                x =>
+                    x.name.toLowerCase() ===
+                    item.name.toLowerCase()
+            );
+
+        if (index >= 0) {
+
+            database.items[index] = saved;
+
+        } else {
+
+            database.items.push(saved);
+
+            newItems++;
+
+        }
+
+    });
+
+    saveDatabase();
+
+    alert(
+        newItems +
+        " new item(s) saved for future bills."
+    );
+
+}
+
+
+/* =====================================
+   CALCULATE
+===================================== */
+
+function calculate() {
+
+    let subtotal = 0;
+
+    billItems.forEach((item,index) => {
+
+        const base =
+            item.qty * item.rate;
+
+        const discount =
+            base * item.discount / 100;
+
+        const net =
+            base - discount;
+
+        const tax =
+            net * item.tax / 100;
+
+        const total =
+            net + tax;
+
+        subtotal += total;
+
+        const cell =
+            document.getElementById(
+                "itemTotal" + index
+            );
+
+        if (cell) {
+
+            cell.textContent =
+                total.toFixed(2);
+
+        }
+
+    });
+
+    const overallDiscount =
+        subtotal *
+        (Number(value("discountRate")) || 0)
+        / 100;
+
+    const taxable =
+        subtotal - overallDiscount;
+
+    const overallTax =
+        taxable *
+        (Number(value("taxRate")) || 0)
+        / 100;
+
+    const grandTotal =
+        taxable + overallTax;
+
+    return {
+
+        subtotal,
+
+        discount: overallDiscount,
+
+        tax: overallTax,
+
+        total: grandTotal
+
+    };
+
+}
+
+
+/* =====================================
+   SAVE BILL
+===================================== */
+
+function saveBill() {
+
+    /* Save shop automatically */
+    database.shop = {
+
+        name: value("shopName"),
+
+        phone: value("shopPhone"),
+
+        email: value("shopEmail"),
+
+        gst: value("shopGST"),
+
+        address: value("shopAddress")
+
+    };
+
+
+    /* Save customer automatically */
+
+    const customerName =
+        value("customerName");
+
+    if (customerName) {
+
+        const customer = {
+
+            name: customerName,
+
+            phone: value("customerPhone"),
+
+            gst: value("customerGST"),
+
+            address: value("customerAddress")
+
+        };
+
+        const customerIndex =
+            database.customers.findIndex(
+                c =>
+                    c.name.toLowerCase() ===
+                    customer.name.toLowerCase()
+                    &&
+                    c.phone === customer.phone
+            );
+
+        if (customerIndex >= 0) {
+
+            database.customers[customerIndex] =
+                customer;
+
+        } else {
+
+            database.customers.push(customer);
+
+        }
+
+    }
+
+
+    /* Save items automatically */
+
+    billItems.forEach(item => {
+
+        if (!item.name) return;
+
+        const saved = {
+
+            name: item.name,
+
+            rate: Number(item.rate),
+
+            tax: Number(item.tax)
+
+        };
+
+        const index =
+            database.items.findIndex(
+                x =>
+                    x.name.toLowerCase() ===
+                    item.name.toLowerCase()
+            );
+
+        if (index >= 0) {
+
+            database.items[index] = saved;
+
+        } else {
+
+            database.items.push(saved);
+
+        }
+
+    });
+
+
+    const totals = calculate();
+
+    const bill = {
+
+        id: Date.now(),
+
+        invoiceNo: value("invoiceNo"),
+
+        date: value("invoiceDate"),
+
+        customer: {
+
+            name: value("customerName"),
+
+            phone: value("customerPhone"),
+
+            gst: value("customerGST"),
+
+            address: value("customerAddress")
+
+        },
+
+        items:
+            JSON.parse(
+                JSON.stringify(billItems)
+            ),
+
+        discountRate:
+            Number(value("discountRate")),
+
+        taxRate:
+            Number(value("taxRate")),
+
+        totals
+
+    };
+
+
+    const existing =
+        database.bills.findIndex(
+            b =>
+                b.invoiceNo === bill.invoiceNo
+        );
+
+
+    if (existing >= 0) {
+
+        database.bills[existing] = bill;
+
+    } else {
+
+        database.bills.push(bill);
+
+        database.nextInvoice++;
+
+    }
+
+
+    saveDatabase();
+
+    alert("Bill saved successfully.");
+
+}
+
+
+/* =====================================
+   LOAD BILL
+===================================== */
+
+function loadBill(id) {
+
+    const bill =
+        database.bills.find(
+            b => b.id === id
+        );
+
+    if (!bill) return;
+
+    document.getElementById("invoiceNo").value =
+        bill.invoiceNo;
+
+    document.getElementById("invoiceDate").value =
+        bill.date;
+
+    document.getElementById("discountRate").value =
+        bill.discountRate;
+
+    document.getElementById("taxRate").value =
+        bill.taxRate;
+
+    document.getElementById("customerName").value =
+        bill.customer.name;
+
+    document.getElementById("customerPhone").value =
+        bill.customer.phone;
+
+    document.getElementById("customerGST").value =
+        bill.customer.gst;
+
+    document.getElementById("customerAddress").value =
+        bill.customer.address;
+
+    billItems =
+        JSON.parse(
+            JSON.stringify(bill.items)
+        );
+
+    renderItems();
+
+}
+
+
+/* =====================================
+   DELETE BILL
+===================================== */
+
+function deleteBill(id) {
+
+    database.bills =
+        database.bills.filter(
+            b => b.id !== id
+        );
+
+    saveDatabase();
+
+}
+
+
+/* =====================================
+   DISPLAY SAVED DATA
+===================================== */
+
+function renderAll() {
+
+    /* Customers */
+
+    const select =
+        document.getElementById(
+            "customerSelect"
+        );
+
+    select.innerHTML =
+        `<option value="">
+            -- New Customer --
+        </option>`;
+
+    database.customers.forEach(
+        (customer,index) => {
+
+            select.innerHTML += `
+
+            <option value="${index}">
+                ${escapeHTML(customer.name)}
+                -
+                ${escapeHTML(customer.phone || "")}
+            </option>
+
+            `;
+
+        }
+    );
+
+
+    /* Customer List */
+
+    const customerList =
+        document.getElementById(
+            "customerList"
+        );
+
+    if (!database.customers.length) {
+
+        customerList.innerHTML =
+            `<span class="muted">
+                No customers saved.
+            </span>`;
+
+    } else {
+
+        customerList.innerHTML =
+            database.customers.map(
+                (customer,index) => `
+
+                <div class="saved-row">
+
+                    <span>
+                        <b>
+                            ${escapeHTML(customer.name)}
+                        </b>
+                        <br>
+                        <span class="muted">
+                            ${escapeHTML(customer.phone || "")}
+                        </span>
+                    </span>
+
+                    <button
+                        class="red"
+                        onclick="
+                            database.customers.splice(${index},1);
+                            saveDatabase()
+                        "
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+                `
+            ).join("");
+
+    }
+
+
+    /* Item List */
+
+    const itemList =
+        document.getElementById(
+            "itemList"
+        );
+
+    if (!database.items.length) {
+
+        itemList.innerHTML =
+            `<span class="muted">
+                No items saved.
+            </span>`;
+
+    } else {
+
+        itemList.innerHTML =
+            database.items.map(
+                (item,index) => `
+
+                <div class="saved-row">
+
+                    <span>
+
+                        <b>
+                            ${escapeHTML(item.name)}
+                        </b>
+
+                        —
+                        ₹${Number(item.rate).toFixed(2)}
+
+                        ${
+                            item.tax
+                            ?
+                            " — Tax " +
+                            item.tax +
+                            "%"
+                            :
+                            ""
+                        }
+
+                    </span>
+
+                    <button
+                        class="red"
+                        onclick="
+                            database.items.splice(${index},1);
+                            saveDatabase();
+                            renderItems()
+                        "
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+                `
+            ).join("");
+
+    }
+
+
+    /* Bills */
+
+    const billList =
+        document.getElementById(
+            "billList"
+        );
+
+    if (!database.bills.length) {
+
+        billList.innerHTML =
+            `<span class="muted">
+                No saved bills.
+            </span>`;
+
+    } else {
+
+        billList.innerHTML =
+            database.bills
+            .slice()
+            .reverse()
+            .map(
+                bill => `
+
+                <div class="saved-row">
+
+                    <span>
+
+                        <b>
+                            ${escapeHTML(
+                                bill.invoiceNo
+                            )}
+                        </b>
+
+                        —
+
+                        ${escapeHTML(
+                            bill.customer.name ||
+                            "Walk-in Customer"
+                        )}
+
+                        —
+
+                        ₹${bill.totals.total.toFixed(2)}
+
+                        <br>
+
+                        <span class="muted">
+                            ${bill.date}
+                        </span>
+
+                    </span>
+
+                    <span>
+
+                        <button
+                            onclick="
+                                loadBill(${bill.id})
+                            "
+                        >
+                            Load
+                        </button>
+
+                        <button
+                            class="red"
+                            onclick="
+                                deleteBill(${bill.id})
+                            "
+                        >
+                            Delete
+                        </button>
+
+                    </span>
+
+                </div>
+
+                `
+            ).join("");
+
+    }
+
+}
+
+
+/* =====================================
+   NUMBER TO WORDS
+===================================== */
+
+function numberToWords(number) {
+
+    if (number === 0)
+        return "Zero";
+
+    const ones = [
+        "",
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Five",
+        "Six",
+        "Seven",
+        "Eight",
+        "Nine",
+        "Ten",
+        "Eleven",
+        "Twelve",
+        "Thirteen",
+        "Fourteen",
+        "Fifteen",
+        "Sixteen",
+        "Seventeen",
+        "Eighteen",
+        "Nineteen"
+    ];
+
+    const tens = [
+        "",
+        "",
+        "Twenty",
+        "Thirty",
+        "Forty",
+        "Fifty",
+        "Sixty",
+        "Seventy",
+        "Eighty",
+        "Ninety"
+    ];
+
+    function convert(n) {
+
+        if (n < 20)
+            return ones[n];
+
+        if (n < 100)
+            return (
+                tens[Math.floor(n / 10)] +
+                " " +
+                ones[n % 10]
+            );
+
+        if (n < 1000)
+            return (
+                ones[Math.floor(n / 100)] +
+                " Hundred " +
+                convert(n % 100)
+            );
+
+        if (n < 100000)
+            return (
+                convert(Math.floor(n / 1000)) +
+                " Thousand " +
+                convert(n % 1000)
+            );
+
+        if (n < 10000000)
+            return (
+                convert(Math.floor(n / 100000)) +
+                " Lakh " +
+                convert(n % 100000)
+            );
+
+        return (
+            convert(Math.floor(n / 10000000)) +
+            " Crore " +
+            convert(n % 10000000)
+        );
+
+    }
+
+    return convert(number)
+        .replace(/\s+/g," ")
+        .trim();
+
+}
+
+
+/* =====================================
+   PRINT A4 BILL
+===================================== */
+
+function printBill() {
+
+    const totals = calculate();
+
+    const shop =
+        database.shop || {};
+
+    let rowsHTML = "";
+
+    billItems.forEach(
+        (item,index) => {
+
+            const base =
+                item.qty * item.rate;
+
+            const discount =
+                base * item.discount / 100;
+
+            const net =
+                base - discount;
+
+            const tax =
+                net * item.tax / 100;
+
+            const total =
+                net + tax;
+
+            rowsHTML += `
+
+            <tr>
+
+                <td>${index + 1}</td>
+
+                <td>
+                    ${escapeHTML(item.name)}
+                </td>
+
+                <td>
+                    ${item.qty}
+                </td>
+
+                <td>
+                    ₹${Number(item.rate).toFixed(2)}
+                </td>
+
+                <td>
+                    ${item.discount}%
+                </td>
+
+                <td>
+                    ${item.tax}%
+                </td>
+
+                <td>
+                    ₹${total.toFixed(2)}
+                </td>
+
+            </tr>
+
+            `;
+
+        }
+    );
+
+
+    const html = `
+
+    <div class="a4">
+
+        <div class="invoice-header">
+
+            <div>
+
+                <div class="shop-name">
+                    ${escapeHTML(shop.name)}
+                </div>
+
+                <div>
+                    ${escapeHTML(shop.address)}
+                </div>
+
+                <div>
+                    ${escapeHTML(shop.phone)}
+                    ${
+                        shop.email
+                        ?
+                        " | " +
+                        escapeHTML(shop.email)
+                        :
+                        ""
+                    }
+                </div>
+
+                <div>
+                    GSTIN:
+                    ${escapeHTML(shop.gst)}
+                </div>
+
+            </div>
+
+
+            <div class="invoice-title">
+
+                TAX INVOICE
+
+                <br>
+
+                <span>
+                    Invoice No:
+                    ${escapeHTML(value("invoiceNo"))}
+                    <br>
+
+                    Date:
+                    ${escapeHTML(value("invoiceDate"))}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="bill-to">
+
+            <div>
+
+                <b>Bill To</b>
+
+                <br>
+
+                ${escapeHTML(
+                    value("customerName")
+                )}
+
+                <br>
+
+                ${escapeHTML(
+                    value("customerAddress")
+                )}
+
+                <br>
+
+                Contact:
+                ${escapeHTML(
+                    value("customerPhone")
+                )}
+
+                <br>
+
+                GSTIN:
+                ${escapeHTML(
+                    value("customerGST")
+                )}
+
+            </div>
+
+        </div>
+
+
+        <table class="print-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Discount</th>
+                    <th>Tax</th>
+                    <th>Amount</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                ${rowsHTML}
+
+            </tbody>
+
+        </table>
+
+
+        <div class="total-box">
+
+            <div class="total-line">
+
+                <span>Subtotal</span>
+
+                <b>
+                    ₹${totals.subtotal.toFixed(2)}
+                </b>
+
+            </div>
+
+            <div class="total-line">
+
+                <span>Discount</span>
+
+                <b>
+                    - ₹${totals.discount.toFixed(2)}
+                </b>
+
+            </div>
+
+            <div class="total-line">
+
+                <span>Tax</span>
+
+                <b>
+                    ₹${totals.tax.toFixed(2)}
+                </b>
+
+            </div>
+
+            <div class="total-line grand-total">
+
+                <span>Grand Total</span>
+
+                <b>
+                    ₹${totals.total.toFixed(2)}
+                </b>
+
+            </div>
+
+        </div>
+
+
+        <div class="amount-words">
+
+            <b>Amount in Words:</b>
+
+            ${numberToWords(
+                Math.round(totals.total)
+            )}
+
+            Rupees Only
+
+        </div>
+
+
+        <div class="footer">
+
+            <span>
+                Thank you for your business!
+            </span>
+
+            <span>
+                Authorized Signatory
+            </span>
+
+        </div>
+
+    </div>
+
+    `;
+
+
+    document.getElementById(
+        "printArea"
+    ).innerHTML = html;
+
+    window.print();
+
+}
+
+
+/* =====================================
+   BACKUP / RESTORE
+===================================== */
+
+function backupData() {
+
+    const file =
+        new Blob(
+            [
+                JSON.stringify(
+                    database,
+                    null,
+                    2
+                )
+            ],
+            {
+                type:
+                "application/json"
+            }
+        );
+
+    const link =
+        document.createElement("a");
+
+    link.href =
+        URL.createObjectURL(file);
+
+    link.download =
+        "billing-backup.json";
+
+    link.click();
+
+}
+
+
+function restoreData(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (!file) return;
+
+    const reader =
+        new FileReader();
+
+    reader.onload = function() {
+
+        try {
+
+            database =
+                JSON.parse(
+                    reader.result
+                );
+
+            saveDatabase();
+
+            loadShop();
+
+            newBill();
+
+            alert(
+                "Backup restored successfully."
+            );
+
+        } catch(error) {
+
+            alert(
+                "Invalid backup file."
+            );
+
+        }
+
+    };
+
+    reader.readAsText(file);
+
+}
+
+
+/* =====================================
+   START APPLICATION
+===================================== */
+
+loadShop();
+
+renderAll();
+
+newBill();
+
+</script>
+
+</body>
+</html>
